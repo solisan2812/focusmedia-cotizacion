@@ -94,8 +94,8 @@ function buildPrintHtml(q) {
 <title>Cotización — ${q.client.name||"Focus Media"}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  html,body{width:816px;margin:0;padding:0;background:#0d0d0d;}
-  .p{width:816px;min-height:1056px;display:flex;flex-direction:column;background:#fff;}
+  html,body{width:215.9mm;height:279.4mm;margin:0;padding:0;background:#0d0d0d;}
+  .p{width:215.9mm;height:279.4mm;display:flex;flex-direction:column;background:#fff;overflow:hidden;}
   .body{flex:1;display:flex;flex-direction:column;}
   .h{background:#0d0d0d;padding:26px 36px;display:flex;align-items:center;gap:18px;}
   .h img{height:62px;}
@@ -165,7 +165,7 @@ function downloadPdf(q) {
     margin: [0,0,0,0],
     filename: fileName,
     image: {type:"png"},
-    html2canvas: {scale:3, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true, windowWidth:816},
+    html2canvas: {scale:3, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true},
     jsPDF: {unit:"mm", format:"letter", orientation:"portrait"}
   }).from(html, "string").save();
 }
