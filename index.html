@@ -247,7 +247,7 @@ function ListScreen({onNew, onOpen}) {
 }
 
 /* ── SERVICE CARD ── */
-function SvcCard({row,edit,upd,rmR,canRm}) {
+function SvcCard({row,edit,upd,rmR,canRm,cur="₡"}) {
   const isOther = row.preset==="Otro...";
   const total   = rT(row);
   return (
@@ -295,11 +295,11 @@ function SvcCard({row,edit,upd,rmR,canRm}) {
             ?<input type="number" inputMode="decimal" min="0" step="any" value={row.price}
                 onChange={e=>upd(row.id,"price",e.target.value)} placeholder="0"
                 style={{...INP,fontSize:18}}/>
-            :<span style={{fontSize:16,fontWeight:600}}>{C}{fmt(row.price)}</span>}
+            :<span style={{fontSize:16,fontWeight:600}}>{cur}{fmt(row.price)}</span>}
         </div>
         <div>
           <span style={LBL}>Subtotal</span>
-          <span style={{fontSize:16,fontWeight:800,color:"#9B7B2A"}}>{C}{fmt(total)}</span>
+          <span style={{fontSize:16,fontWeight:800,color:"#9B7B2A"}}>{cur}{fmt(total)}</span>
         </div>
       </div>
       {edit && canRm && (
@@ -445,7 +445,7 @@ function QuoteScreen({initial, onBack}) {
         {/* SERVICES */}
         <span style={LBL}>Servicios</span>
         {q.rows.map(row=>(
-          <SvcCard key={row.id} row={row} edit={edit} upd={updR} rmR={rmR} canRm={q.rows.length>1}/>
+          <SvcCard key={row.id} row={row} edit={edit} upd={updR} rmR={rmR} canRm={q.rows.length>1} cur={C}/>
         ))}
         {edit && (
           <button onClick={addR}
