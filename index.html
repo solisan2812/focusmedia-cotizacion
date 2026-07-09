@@ -55,7 +55,7 @@ function makeQuote() {
 const SK = "fm_quotes_v2";
 const SK_CFG = "fm_settings_v1";
 function loadSettings() {
-  try { return Object.assign({name:"Focus Media",ced:"",email:"focusmedia.cr@gmail.com",phone:"+506 6025-4961",addr:""}, JSON.parse(localStorage.getItem(SK_CFG)||"{}") ); }
+  try { return Object.assign({name:"Focus Media",ced:"",email:"focusmedia.cr@gmail.com",phone:"+506 6025-4961",addr:"",tc_url:""}, JSON.parse(localStorage.getItem(SK_CFG)||"{}") ); }
   catch { return {name:"Focus Media",ced:"",email:"focusmedia.cr@gmail.com",phone:"+506 6025-4961",addr:""}; }
 }
 function saveSettings(s) { localStorage.setItem(SK_CFG, JSON.stringify(s)); }
@@ -145,6 +145,7 @@ function buildPrintHtml(q) {
     <div class="tf"><span>TOTAL</span><span>${q.currency||"₡"}${fmt(tot)}</span></div>
   </div>
   ${q.notes?`<div class="ns"><p><b style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Notas</b><br>${q.notes}</p></div>`:""}
+  ${(()=>{const tu=typeof loadSettings==="function"?loadSettings().tc_url:""; return tu?`<div class="ns" style="padding-top:0"><p><b style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Términos y Condiciones</b><br><a href="${tu}" style="color:#C9A84C;font-size:12px;">${tu}</a></p></div>`:"";})()}
   <div class="ft"><img src="${LOGO}" alt="FM"><span>${q.company.email}</span><span>${q.date}</span></div>
 </div>
 <script>setTimeout(function(){window.print();},400);<\/script>
@@ -518,6 +519,20 @@ function QuoteScreen({initial, onBack}) {
             borderRadius:10,padding:"12px 14px",fontSize:15,color:"#444",resize:"none",
             outline:"none",fontFamily:"inherit",background:"#fdfaf4"}}/>
 
+        {/* T&C LINK */}
+        {(()=>{const tcUrl=loadSettings().tc_url; return tcUrl?(
+          <div style={{marginTop:8,padding:"10px 14px",background:"#fdfaf4",borderRadius:8,
+            border:"1px solid #e8dfc8"}}>
+            <span style={{fontSize:11,fontWeight:700,letterSpacing:1.5,textTransform:"uppercase",color:"#9B7B2A"}}>
+              Términos y Condiciones
+            </span><br/>
+            <a href={tcUrl} target="_blank" rel="noopener noreferrer"
+              style={{fontSize:13,color:"#C9A84C",wordBreak:"break-all"}}>
+              Ver documento →
+            </a>
+          </div>
+        ):null;})()}
+
         {/* FOOTER STRIP */}
         <div style={{marginTop:16,background:"#0d0d0d",borderRadius:12,padding:"13px 18px",
           display:"flex",alignItems:"center",justifyContent:"space-between"}}>
@@ -562,6 +577,11 @@ function SettingsScreen() {
         {field("Correo","email")}
         {field("Teléfono","phone")}
         {field("Cédula / RUC","ced")}
+        <div style={{marginBottom:16}}>
+          <div style={lbl}>Link Términos y Condiciones</div>
+          <input {...inp("tc_url")} placeholder="https://forms.google.com/…" type="url"/>
+          <div style={{fontSize:11,color:"#555",marginTop:4}}>Aparece debajo de las notas en cada cotización.</div>
+        </div>
         <button onClick={handleSave} style={{
           width:"100%",padding:"12px",borderRadius:10,border:"none",cursor:"pointer",
           background: saved?"#2a5c2a":"linear-gradient(135deg,#9B7B2A,#C9A84C)",
