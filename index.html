@@ -156,20 +156,27 @@ function downloadPdf(q) {
   const html = buildPrintHtml(q);
   const clientName = (q.client.name||"cotizacion").replace(/[^a-z0-9]/gi,"_").toLowerCase();
   const fileName = "FM_" + clientName + "_" + q.date + ".pdf";
-  const opts = (fmt) => ({
-    margin: 0,
-    filename: fileName,
-    image: {type:"png"},
-    html2canvas: {scale:4, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true},
-    jsPDF: {unit:"mm", format: fmt, orientation:"portrait"}
-  });
-  // First pass: measure actual content height
-  html2pdf().set(opts("a4")).from(html, "string").toCanvas().then(canvas => {
-    const W = 210; // A4 width mm
-    const H = Math.ceil(canvas.height * W / canvas.width);
-    // Second pass: PDF sized exactly to content
-    html2pdf().set(opts([W, H])).from(html, "string").save();
-  });
+
+  // Measure real content height via hidden iframe (single render pass)
+  const iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1px;border:none;visibility:hidden;";
+  document.body.appendChild(iframe);
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open(); doc.write(html); doc.close();
+
+  setTimeout(() => {
+    const contentH = doc.documentElement.scrollHeight || doc.body.scrollHeight;
+    document.body.removeChild(iframe);
+    const W = 210; // mm
+    const H = Math.ceil(contentH * W / 794); // 794px = A4 width at 96dpi
+    html2pdf().set({
+      margin: 0,
+      filename: fileName,
+      image: {type:"png"},
+      html2canvas: {scale:4, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true},
+      jsPDF: {unit:"mm", format:[W, Math.max(H, 10)], orientation:"portrait"}
+    }).from(html, "string").save();
+  }, 600);
 }
 
 /* ── shared styles ── */
