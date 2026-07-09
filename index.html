@@ -73,50 +73,53 @@ function buildPrintHtml(q) {
   const s   = sub(q.rows);
   const iv  = q.iva ? s*0.13 : 0;
   const tot = s+iv;
+  const CUR = q.currency||"₡";
   const svcRows = q.rows.map((r,i)=>{
     const label = (r.preset==="Otro..."||r.preset==="Paquete...")?r.custom||r.preset:r.preset;
     return `<tr>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;vertical-align:top;">
-        <b style="font-size:13px;">${label||"Servicio "+(i+1)}</b>
-        ${r.desc?`<br><span style="font-size:11px;color:#888;">${r.desc}</span>`:""}
+      <td style="padding:12px 20px;border-bottom:1px solid #f0ebe0;vertical-align:top;">
+        <b style="font-size:15px;">${label||"Servicio "+(i+1)}</b>
+        ${r.desc?`<br><span style="font-size:13px;color:#888;">${r.desc}</span>`:""}
       </td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;">${r.qty}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;">${q.currency||"₡"}${fmt(r.price)}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;font-weight:700;">${q.currency||"₡"}${fmt(rT(r))}</td>
+      <td style="padding:12px 20px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:15px;">${r.qty}</td>
+      <td style="padding:12px 20px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:15px;">${CUR}${fmt(r.price)}</td>
+      <td style="padding:12px 20px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:15px;font-weight:700;">${CUR}${fmt(rT(r))}</td>
     </tr>`;
   }).join("");
   const coMeta = [q.company.ced?"Cédula: "+q.company.ced:"", q.company.email, q.company.phone].filter(Boolean).join(" · ");
   const clInfo = [q.client.email, q.client.phone, q.client.addr].filter(Boolean).join("<br>");
+  const tcUrl  = typeof loadSettings==="function" ? loadSettings().tc_url : "";
   return `<!DOCTYPE html><html lang="es"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
 <title>Cotización — ${q.client.name||"Focus Media"}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:Arial,Helvetica,sans-serif;background:#fff;padding:0;margin:0;}
-  .p{max-width:100%;margin:0;background:#fff;}
-  .h{background:#0d0d0d;padding:24px 32px;display:flex;align-items:center;gap:16px;}
-  .h img{height:56px;}
-  .hn{font-size:19px;font-weight:800;color:#E4C76B;}
-  .hs{font-size:11px;color:rgba(255,255,255,.5);margin-top:3px;}
-  .gb{height:3px;background:linear-gradient(90deg,#9B7B2A,#C9A84C,#E4C76B,#C9A84C,#9B7B2A);}
-  .m{background:#F9F7F2;padding:18px 32px;display:grid;grid-template-columns:1fr 1fr;gap:16px;border-bottom:1px solid #E8E0CC;}
-  .ml{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;margin-bottom:6px;}
-  .mv{font-size:13px;color:#222;line-height:1.6;}
-  .ss{padding:22px 32px;}
-  .st{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;margin-bottom:12px;}
-  table{width:100%;border-collapse:collapse;}
-  thead th{background:#0d0d0d;color:rgba(201,168,76,.85);font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:10px 14px;text-align:left;}
+  html,body{width:215.9mm;height:279.4mm;background:#fff;}
+  .p{width:215.9mm;height:279.4mm;display:flex;flex-direction:column;background:#fff;}
+  .body{flex:1;display:flex;flex-direction:column;}
+  .h{background:#0d0d0d;padding:26px 36px;display:flex;align-items:center;gap:18px;}
+  .h img{height:62px;}
+  .hn{font-size:22px;font-weight:800;color:#E4C76B;}
+  .hs{font-size:13px;color:rgba(255,255,255,.55);margin-top:4px;}
+  .gb{height:4px;background:linear-gradient(90deg,#9B7B2A,#C9A84C,#E4C76B,#C9A84C,#9B7B2A);}
+  .m{background:#F9F7F2;padding:20px 36px;display:grid;grid-template-columns:1fr 1fr;gap:18px;border-bottom:1px solid #E8E0CC;}
+  .ml{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;margin-bottom:7px;}
+  .mv{font-size:15px;color:#222;line-height:1.65;}
+  .ss{padding:22px 36px 0;}
+  .st{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;margin-bottom:14px;}
+  table{width:100%;border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;}
+  thead th{background:#0d0d0d;color:rgba(201,168,76,.85);font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:11px 20px;text-align:left;}
   thead th:first-child{border-radius:5px 0 0 5px;}thead th:last-child{border-radius:0 5px 5px 0;text-align:right;}
-  .tb{width:260px;float:right;border-radius:8px;overflow:hidden;border:1px solid #E8E0CC;margin:0 32px 16px;}
-  .tr{display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #eee;font-size:13px;}
-  .tf{display:flex;justify-content:space-between;padding:12px 14px;background:#0d0d0d;}
-  .tf span{font-size:15px;font-weight:700;color:#E4C76B;}
-  .ns{padding:12px 32px 20px;clear:both;}
-  .ns p{font-size:12px;color:#555;line-height:1.7;}
-  .ft{background:#0d0d0d;padding:12px 32px;display:flex;align-items:center;justify-content:space-between;}
-  .ft img{height:20px;opacity:.6;}
-  .ft span{font-size:10px;color:rgba(255,255,255,.3);}
-  @media print{@page{margin:0;size:A4;}body{background:#fff;padding:0;}.p{box-shadow:none;border-radius:0;}}
+  .tb{width:290px;float:right;border-radius:8px;overflow:hidden;border:1px solid #E8E0CC;margin:14px 36px 16px;}
+  .tr{display:flex;justify-content:space-between;padding:11px 16px;border-bottom:1px solid #eee;font-size:15px;}
+  .tf{display:flex;justify-content:space-between;padding:13px 16px;background:#0d0d0d;}
+  .tf span{font-size:17px;font-weight:700;color:#E4C76B;}
+  .ns{padding:10px 36px 14px;clear:both;}
+  .ns p{font-size:13px;color:#555;line-height:1.75;}
+  .sp{flex:1;}
+  .ft{background:#0d0d0d;padding:13px 36px;display:flex;align-items:center;justify-content:space-between;}
+  .ft img{height:22px;opacity:.65;}
+  .ft span{font-size:11px;color:rgba(255,255,255,.35);}
 </style></head><body>
 <div class="p">
   <div class="h"><img src="${LOGO}" alt="FM"><div>
@@ -124,31 +127,33 @@ function buildPrintHtml(q) {
     <div class="hs">${coMeta}</div>
   </div></div>
   <div class="gb"></div>
-  <div class="m">
-    <div><div class="ml">Facturar a</div>
-      <div class="mv"><b>${q.client.name||"—"}</b>${clInfo?"<br>"+clInfo:""}</div></div>
-    <div><div class="ml">Resumen</div>
-      <div class="mv">Fecha: ${q.date}${q.validUntil?"<br>Válida hasta: "+q.validUntil:""}<br>IVA: ${q.iva?"13% incluido":"No aplica"}<br><b style="color:#8B6B1A;font-size:15px;">${q.currency||"₡"}${fmt(tot)}</b></div></div>
+  <div class="body">
+    <div class="m">
+      <div><div class="ml">Facturar a</div>
+        <div class="mv"><b>${q.client.name||"—"}</b>${clInfo?"<br>"+clInfo:""}</div></div>
+      <div><div class="ml">Resumen</div>
+        <div class="mv">Fecha: ${q.date}${q.validUntil?"<br>Válida hasta: "+q.validUntil:""}<br>IVA: ${q.iva?"13% incluido":"No aplica"}<br><b style="color:#8B6B1A;font-size:17px;">${CUR}${fmt(tot)}</b></div></div>
+    </div>
+    <div class="ss">
+      <div class="st">Detalle de Servicios</div>
+      <table><thead><tr>
+        <th style="width:46%">Servicio / Descripción</th>
+        <th style="width:10%;text-align:right">Cant.</th>
+        <th style="width:22%;text-align:right">Precio unit.</th>
+        <th style="width:22%;text-align:right">Subtotal</th>
+      </tr></thead><tbody>${svcRows}</tbody></table>
+    </div>
+    <div class="tb">
+      <div class="tr"><span>Subtotal</span><span><b>${CUR}${fmt(s)}</b></span></div>
+      <div class="tr"><span>IVA (13%)</span><span><b>${q.iva?CUR+fmt(iv):"—"}</b></span></div>
+      <div class="tf"><span>TOTAL</span><span>${CUR}${fmt(tot)}</span></div>
+    </div>
+    ${q.notes?`<div class="ns"><p><b style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Notas</b><br>${q.notes}</p></div>`:""}
+    ${tcUrl?`<div class="ns" style="padding-top:0"><p><b style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Términos y Condiciones</b><br><a href="${tcUrl}" style="color:#C9A84C;font-size:13px;">${tcUrl}</a></p></div>`:""}
+    <div class="sp"></div>
   </div>
-  <div class="ss">
-    <div class="st">Detalle de Servicios</div>
-    <table><thead><tr>
-      <th style="width:46%">Servicio / Descripción</th>
-      <th style="width:10%;text-align:right">Cant.</th>
-      <th style="width:20%;text-align:right">Precio unit.</th>
-      <th style="width:20%;text-align:right">Subtotal</th>
-    </tr></thead><tbody>${svcRows}</tbody></table>
-  </div>
-  <div class="tb">
-    <div class="tr"><span>Subtotal</span><span><b>${q.currency||"₡"}${fmt(s)}</b></span></div>
-    <div class="tr"><span>IVA (13%)</span><span><b>${q.iva?(q.currency||"₡")+fmt(iv):"—"}</b></span></div>
-    <div class="tf"><span>TOTAL</span><span>${q.currency||"₡"}${fmt(tot)}</span></div>
-  </div>
-  ${q.notes?`<div class="ns"><p><b style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Notas</b><br>${q.notes}</p></div>`:""}
-  ${(()=>{const tu=typeof loadSettings==="function"?loadSettings().tc_url:""; return tu?`<div class="ns" style="padding-top:0"><p><b style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Términos y Condiciones</b><br><a href="${tu}" style="color:#C9A84C;font-size:12px;">${tu}</a></p></div>`:"";})()}
   <div class="ft"><img src="${LOGO}" alt="FM"><span>${q.company.email}</span><span>${q.date}</span></div>
 </div>
-<script>setTimeout(function(){window.print();},400);<\/script>
 </body></html>`;
 }
 
@@ -156,27 +161,13 @@ function downloadPdf(q) {
   const html = buildPrintHtml(q);
   const clientName = (q.client.name||"cotizacion").replace(/[^a-z0-9]/gi,"_").toLowerCase();
   const fileName = "FM_" + clientName + "_" + q.date + ".pdf";
-
-  // Measure real content height via hidden iframe (single render pass)
-  const iframe = document.createElement("iframe");
-  iframe.style.cssText = "position:fixed;left:-9999px;top:0;width:794px;height:1px;border:none;visibility:hidden;";
-  document.body.appendChild(iframe);
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open(); doc.write(html); doc.close();
-
-  setTimeout(() => {
-    const contentH = doc.documentElement.scrollHeight || doc.body.scrollHeight;
-    document.body.removeChild(iframe);
-    const W = 210; // mm
-    const H = Math.ceil(contentH * W / 794); // 794px = A4 width at 96dpi
-    html2pdf().set({
-      margin: 0,
-      filename: fileName,
-      image: {type:"png"},
-      html2canvas: {scale:4, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true},
-      jsPDF: {unit:"mm", format:[W, Math.max(H, 10)], orientation:"portrait"}
-    }).from(html, "string").save();
-  }, 600);
+  html2pdf().set({
+    margin: 0,
+    filename: fileName,
+    image: {type:"png"},
+    html2canvas: {scale:3, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true, width:816},
+    jsPDF: {unit:"mm", format:"letter", orientation:"portrait"}
+  }).from(html, "string").save();
 }
 
 /* ── shared styles ── */
