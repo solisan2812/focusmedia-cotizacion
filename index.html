@@ -46,6 +46,7 @@ function makeQuote() {
     validUntil: "",
     rows: [nr()],
     iva: true,
+    currency: "₡",
     notes: "Precios sujetos a cambio sin previo aviso. Forma de pago: 50% a la firma, 50% a la entrega.",
   };
 }
@@ -80,8 +81,8 @@ function buildPrintHtml(q) {
         ${r.desc?`<br><span style="font-size:11px;color:#888;">${r.desc}</span>`:""}
       </td>
       <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;">${r.qty}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;">${C}${fmt(r.price)}</td>
-      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;font-weight:700;">${C}${fmt(rT(r))}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;">${q.currency||"₡"}${fmt(r.price)}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid #f0ebe0;text-align:right;font-size:13px;font-weight:700;">${q.currency||"₡"}${fmt(rT(r))}</td>
     </tr>`;
   }).join("");
   const coMeta = [q.company.ced?"Cédula: "+q.company.ced:"", q.company.email, q.company.phone].filter(Boolean).join(" · ");
@@ -127,7 +128,7 @@ function buildPrintHtml(q) {
     <div><div class="ml">Facturar a</div>
       <div class="mv"><b>${q.client.name||"—"}</b>${clInfo?"<br>"+clInfo:""}</div></div>
     <div><div class="ml">Resumen</div>
-      <div class="mv">Fecha: ${q.date}${q.validUntil?"<br>Válida hasta: "+q.validUntil:""}<br>IVA: ${q.iva?"13% incluido":"No aplica"}<br><b style="color:#8B6B1A;font-size:15px;">${C}${fmt(tot)}</b></div></div>
+      <div class="mv">Fecha: ${q.date}${q.validUntil?"<br>Válida hasta: "+q.validUntil:""}<br>IVA: ${q.iva?"13% incluido":"No aplica"}<br><b style="color:#8B6B1A;font-size:15px;">${q.currency||"₡"}${fmt(tot)}</b></div></div>
   </div>
   <div class="ss">
     <div class="st">Detalle de Servicios</div>
@@ -139,9 +140,9 @@ function buildPrintHtml(q) {
     </tr></thead><tbody>${svcRows}</tbody></table>
   </div>
   <div class="tb">
-    <div class="tr"><span>Subtotal</span><span><b>${C}${fmt(s)}</b></span></div>
-    <div class="tr"><span>IVA (13%)</span><span><b>${q.iva?C+fmt(iv):"—"}</b></span></div>
-    <div class="tf"><span>TOTAL</span><span>${C}${fmt(tot)}</span></div>
+    <div class="tr"><span>Subtotal</span><span><b>${q.currency||"₡"}${fmt(s)}</b></span></div>
+    <div class="tr"><span>IVA (13%)</span><span><b>${q.iva?(q.currency||"₡")+fmt(iv):"—"}</b></span></div>
+    <div class="tf"><span>TOTAL</span><span>${q.currency||"₡"}${fmt(tot)}</span></div>
   </div>
   ${q.notes?`<div class="ns"><p><b style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9B7B2A;">Notas</b><br>${q.notes}</p></div>`:""}
   <div class="ft"><img src="${LOGO}" alt="FM"><span>${q.company.email}</span><span>${q.date}</span></div>
@@ -230,7 +231,7 @@ function ListScreen({onNew, onOpen}) {
                 <div style={{fontSize:13,color:"#888",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{svcs}</div>
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
-                <div style={{fontWeight:800,fontSize:18,color:"#9B7B2A"}}>{C}{fmt(t)}</div>
+                <div style={{fontWeight:800,fontSize:18,color:"#9B7B2A"}}>{q.currency||"₡"}{fmt(t)}</div>
                 <div style={{fontSize:12,color:"#bbb",marginBottom:10}}>{q.iva?"IVA incl.":"Sin IVA"}</div>
                 <button onClick={e=>del(e,q.id)}
                   style={{...BTN,background:"transparent",border:"1px solid #fca5a5",color:"#ef4444",padding:"6px 12px",fontSize:13,borderRadius:8}}>
@@ -318,6 +319,7 @@ function QuoteScreen({initial, onBack}) {
   const [edit,setEd]  = useState(true);
   const [sav, setSav] = useState(false);
   const [toast,setT]  = useState(null);
+  const C = q.currency||"₡";
   const toast2 = (m,ok=true) => { setT({m,ok}); setTimeout(()=>setT(null),2400); };
 
   const updCo = f => setQ(p=>({...p,company:{...p.company,...f}}));
@@ -477,6 +479,22 @@ function QuoteScreen({initial, onBack}) {
                 </span>
               </div>
               :<span style={{fontWeight:600}}>{q.iva?C+fmt(iv):"—"}</span>}
+          </div>
+          {/* Currency toggle */}
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"13px 18px",
+            borderBottom:"1px solid #f0ebe0",fontSize:15}}>
+            <span style={{color:"#555"}}>Moneda</span>
+            {edit
+              ?<div style={{display:"flex",gap:6}}>
+                {["₡","$"].map(sym=>(
+                  <button key={sym} onClick={()=>setQ(p=>({...p,currency:sym}))}
+                    style={{padding:"5px 14px",borderRadius:8,border:"none",cursor:"pointer",fontWeight:700,fontSize:14,
+                      background:C===sym?"#C9A84C":"#e8e0cc",color:C===sym?"#0d0d0d":"#777",transition:"all .2s"}}>
+                    {sym==="₡"?"₡ CRC":"$ USD"}
+                  </button>
+                ))}
+              </div>
+              :<span style={{fontWeight:600}}>{C}</span>}
           </div>
           {q.iva && <div style={{display:"flex",justifyContent:"space-between",padding:"13px 18px",
             borderBottom:"1px solid #f0ebe0",fontSize:15}}>
