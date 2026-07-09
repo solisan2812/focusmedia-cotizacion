@@ -156,14 +156,20 @@ function downloadPdf(q) {
   const html = buildPrintHtml(q);
   const clientName = (q.client.name||"cotizacion").replace(/[^a-z0-9]/gi,"_").toLowerCase();
   const fileName = "FM_" + clientName + "_" + q.date + ".pdf";
-  html2pdf().set({
+  const opts = (fmt) => ({
     margin: 0,
     filename: fileName,
     image: {type:"png"},
     html2canvas: {scale:4, useCORS:true, backgroundColor:"#ffffff", logging:false, letterRendering:true},
-    jsPDF: {unit:"mm", format:"a4", orientation:"portrait"},
-    pagebreak: {mode:["css","legacy"], avoid:["tr","img",".h",".m",".gb"]}
-  }).from(html, "string").save();
+    jsPDF: {unit:"mm", format: fmt, orientation:"portrait"}
+  });
+  // First pass: measure actual content height
+  html2pdf().set(opts("a4")).from(html, "string").toCanvas().then(canvas => {
+    const W = 210; // A4 width mm
+    const H = Math.ceil(canvas.height * W / canvas.width);
+    // Second pass: PDF sized exactly to content
+    html2pdf().set(opts([W, H])).from(html, "string").save();
+  });
 }
 
 /* ── shared styles ── */
